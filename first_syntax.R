@@ -3,7 +3,7 @@ library(forcats)
 library(extrafont)
 library(car)
 
-faith <- read_dta("D://faith_matters/faith.DTA")
+faith <- read_csv("https://raw.githubusercontent.com/ryanburge/faith_matters/master/faith.csv")
 
 
 faith <- faith %>% 
