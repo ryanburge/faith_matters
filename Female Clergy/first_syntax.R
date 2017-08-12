@@ -33,6 +33,22 @@ faith$final <- as.factor(faith$final)
 
 faith$final <- fct_relevel(faith$final, "Strongly Disagree", "Disagree", "Agree", "Strongly Agree")
 
+
+full <- faith %>% 
+  filter(final != 0) %>% 
+  count(final, wt = weight) %>%  mutate(weight = prop.table(n))
+
+full %>% 
+  filter(final != 0) %>% 
+  ggplot(., aes(x=final, y=weight)) + geom_col(fill = "seagreen1", color = "black")  + 
+  scale_y_continuous(labels = scales::percent) + 
+  labs(x= "Response", y= "Percent of Sample", title = "Women should be allowed to be priests or clergy in my house of worship?", caption = "Data: Faith Matters 2006" ) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(text=element_text(size=28, family="KerkisSans"))
+
+ggsave(file="female_clergy_overall.png", type = "cairo-png", width = 15, height =12)
+
+##Without Weights
   
 faith %>% 
   filter(final != 0) %>% 
@@ -40,20 +56,59 @@ faith %>%
   scale_y_continuous(labels = scales::percent) + 
   labs(x= "Response", y= "Percent of Sample", title = "Women should be allowed to be priests or clergy in my house of worship?", caption = "Data: Faith Matters 2006" ) +
   theme(plot.title = element_text(hjust = 0.5)) +
-  theme(text=element_text(size=18, family="KerkisSans"))
+  theme(text=element_text(size=28, family="KerkisSans"))
+
+ggsave(file="female_clergy_overall.png", type = "cairo-png", width = 20, height =12)
+
 
 faith$reborn <- recode(faith$bornagn, "1='Born Again'; else='Not Born Again'")
 
 faith$reborn <- as.factor(faith$reborn)
+
+
+bap <- faith %>% 
+  filter(bapt ==1 & final != 0) %>% 
+  count(final, wt = weight) %>%
+  mutate(weight = prop.table(n), label = c("Southern Baptists")) 
+
+cath <- faith %>% 
+  filter(relig ==2 & final != 0) %>% 
+  count(final, wt = weight) %>%
+  mutate(weight = prop.table(n), label = c("Roman Catholics")) 
+
+compare <- bind_rows(bap, cath)
+
+compare %>% 
+  ggplot(., aes(x=final, y=weight)) + geom_col(fill = "darkorchid4", color = "black")  + 
+  scale_y_continuous(labels = scales::percent) + 
+  labs(x= "Response", y= "Percent of Sample", title = "Agreement with Female Clergy", caption = "Data: Faith Matters 2006" ) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(text=element_text(size=28, family="KerkisSans")) + facet_grid(.~label)
+
+ggsave(file="cath_sbc_female_clergy.png", type = "cairo-png", width = 15, height =12)
+
+
 
 faith %>% 
   filter(final != 0) %>% 
   filter(bapt ==1) %>% 
   ggplot(., aes(x=final)) + geom_bar(fill = "seagreen1", color = "black", aes(y = (..count..)/sum(..count..)))  + 
   scale_y_continuous(labels = scales::percent) + 
-  labs(x= "Response", y= "Percent of Sample", title = "Female Clergy - Southern Baptists", caption = "Data: Faith Matters 2006" ) +
+  labs(x= "Response", y= "Percent of Sample", title = "Southern Baptists", caption = "Data: Faith Matters 2006" ) +
   theme(plot.title = element_text(hjust = 0.5)) +
   theme(text=element_text(size=18, family="KerkisSans")) 
+
+
+faith %>% 
+  filter(final != 0) %>% 
+  filter(relig ==2) %>% 
+  ggplot(., aes(x=final)) + geom_bar(fill = "seagreen1", color = "black", aes(y = (..count..)/sum(..count..)))  + 
+  scale_y_continuous(labels = scales::percent) + 
+  labs(x= "Response", y= "Percent of Sample", title = "Roman Catholics", caption = "Data: Faith Matters 2006" ) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(text=element_text(size=18, family="KerkisSans")) 
+
+grid.arrange(bap, cath, ncol=2)
  
 gender <- faith %>% 
   group_by(gender) %>% 
@@ -70,8 +125,11 @@ gender %>%
   scale_y_continuous(labels = scales::percent) +
   labs(x= "Response", y= "Percent of Sample", title = "Female Clergy - By Gender", caption = "Data: Faith Matters 2006" ) +
   theme(plot.title = element_text(hjust = 0.5)) +
-  theme(text=element_text(size=18, family="KerkisSans"))  +
+  theme(text=element_text(size=28, family="KerkisSans"))  +
   theme(legend.position = "bottom") + theme(legend.title=element_blank())
+
+ggsave(file="gender_female_clergy.png", type = "cairo-png", width = 15, height =12)
+
 
 pid <- faith %>% 
   filter(partyid <= 3) %>% 
@@ -89,9 +147,12 @@ pid %>%
   scale_y_continuous(labels = scales::percent) +
   labs(x= "Response", y= "Percent of Sample", title = "Female Clergy - Party Identification", caption = "Data: Faith Matters 2006" ) +
   theme(plot.title = element_text(hjust = 0.5)) +
-  theme(text=element_text(size=18, family="KerkisSans"))   +
+  theme(text=element_text(size=28, family="KerkisSans"))   +
   theme(legend.position = "bottom") + theme(legend.title=element_blank()) + 
   scale_fill_manual("legend", values = c("Democrat" = "dodgerblue3", "Independent" = "gray", "Republican" = "firebrick3"))
+
+ggsave(file="pid_female_clergy.png", type = "cairo-png", width = 15, height =12)
+
 
 gay <- faith %>% 
   filter(gaywed <= 2) %>% 
@@ -114,9 +175,12 @@ gay %>%
   scale_y_continuous(labels = scales::percent) +
   labs(x= "Response", y= "Percent of Sample", title = "Female Clergy - Gay Marriage", caption = "Data: Faith Matters 2006" ) +
   theme(plot.title = element_text(hjust = 0.5)) +
-  theme(text=element_text(size=18, family="KerkisSans"))   +
+  theme(text=element_text(size=28, family="KerkisSans"))   +
   theme(legend.position = "bottom") + theme(legend.title=element_blank()) + 
   scale_fill_manual("legend", values = c("Gay Marriage" = "dodgerblue3", "Civil Unions" = "gray", "Neither" = "firebrick3"))
+
+ggsave(file="gay_female_clergy.png", type = "cairo-png", width = 15, height =12)
+
 
 attend <- faith %>% 
   filter(relatend <= 9) %>% 
@@ -138,8 +202,11 @@ attend %>%
   scale_y_continuous(labels = scales::percent) +
   labs(x= "Response", y= "Percent of Sample", title = "Female Clergy - Church Attendance", caption = "Data: Faith Matters 2006" ) +
   theme(plot.title = element_text(hjust = 0.5)) +
-  theme(text=element_text(size=18, family="KerkisSans"))   +
+  theme(text=element_text(size=28, family="KerkisSans"))   +
   theme(legend.position = "bottom") + theme(legend.title=element_blank())
+
+ggsave(file="attend_female_clergy.png", type = "cairo-png", width = 15, height =12)
+
 
 
 
